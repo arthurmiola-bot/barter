@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a3a1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Barter" />
+  <title>Barter Soja</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --g800:#1a3a1a; --g700:#254f25; --g600:#2e6b2e; --g500:#3d8b3d;
+      --g300:#7ec87e; --g100:#d4edda; --g50:#eef7ee;
+      --text:#0d1f0d; --text2:#3d5c3d; --text3:#7a9a7a;
+      --bg:#f4f8f4; --card:#ffffff; --bdr:#c8dcc8;
+      --font:'DM Sans',system-ui,sans-serif;
+      --serif:'DM Serif Display',Georgia,serif;
+      --safe-b:env(safe-area-inset-bottom,0px);
+      --safe-t:env(safe-area-inset-top,0px);
+    }
+    html,body{height:100%;overflow:hidden;background:var(--bg);}
+    body{font-family:var(--font);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;}
+
+    /* SPLASH */
+    #splash{position:fixed;inset:0;z-index:999;background:var(--g800);display:flex;align-items:center;justify-content:center;transition:opacity .5s,transform .5s;}
+    #splash.out{opacity:0;transform:scale(1.04);pointer-events:none;}
+    .spl-icon{font-size:52px;animation:float 2s ease-in-out infinite;margin-bottom:14px;}
+    .spl-title{font-family:var(--serif);font-size:34px;color:#fff;text-align:center;}
+    .spl-sub{font-size:13px;color:var(--g300);margin-top:6px;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+    /* LAYOUT */
+    #app{height:100%;display:flex;flex-direction:column;}
+    .hidden{display:none!important;}
+
+    /* HEADER */
+    .hdr{background:var(--g800);padding:calc(var(--safe-t) + 10px) 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .hdr-left{display:flex;align-items:center;gap:9px;}
+    .hdr-title{font-family:var(--serif);font-size:20px;color:#fff;}
+    .btn-ico{width:34px;height:34px;border:none;background:rgba(255,255,255,.12);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;}
+    .btn-ico:active{background:rgba(255,255,255,.22);}
+
+    /* SOJA BAR */
+    .soja-bar{background:var(--g700);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+    .soja-lbl{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--g300);white-space:nowrap;}
+    .soja-wrap{flex:1;display:flex;align-items:center;background:rgba(255,255,255,.1);border-radius:9px;border:1px solid rgba(255,255,255,.15);padding:0 10px;}
+    .soja-wrap span{font-size:13px;color:var(--g300);white-space:nowrap;}
+    .soja-wrap input{flex:1;background:none;border:none;outline:none;font-family:var(--font);font-size:18px;font-weight:600;color:#fff;text-align:center;padding:8px 4px;-moz-appearance:textfield;}
+    .soja-wrap input::placeholder{color:rgba(255,255,255,.3);}
+    .soja-wrap input::-webkit-outer-spin-button,.soja-wrap input::-webkit-inner-spin-button{-webkit-appearance:none;}
+    .funrural-note{font-size:10px;color:var(--g300);opacity:.8;white-space:nowrap;line-height:1.4;text-align:right;}
+
+    /* SCROLL */
+    .scroll{flex:1;overflow-y:auto;padding:10px 12px;padding-bottom:calc(215px + var(--safe-b));-webkit-overflow-scrolling:touch;}
+
+    /* CARDS */
+    .card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:13px;margin-bottom:9px;box-shadow:0 1px 4px rgba(30,60,30,.07);}
+    .lbl{display:block;font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--text3);margin-bottom:8px;}
+    .field{width:100%;border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;font-family:var(--font);font-size:15px;color:var(--text);background:var(--bg);outline:none;}
+    .field:focus{border-color:var(--g500);background:#fff;}
+
+    /* SEARCH */
+    .search-wrap{position:relative;margin-bottom:8px;}
+    .search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text3);}
+    .search-input{width:100%;border:1px solid var(--bdr);border-radius:9px;padding:10px 12px 10px 33px;font-family:var(--font);font-size:15px;color:var(--text);background:var(--bg);outline:none;}
+    .search-input:focus{border-color:var(--g500);background:#fff;}
+
+    /* PRODUCT LIST */
+    .prod-list{border:1px solid var(--bdr);border-radius:9px;overflow:hidden;max-height:250px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--card);}
+    .pi{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border-bottom:1px solid var(--g50);cursor:pointer;user-select:none;}
+    .pi:last-child{border-bottom:none;}
+    .pi:active{background:var(--g50);}
+    .pi-name{font-size:13px;font-weight:500;color:var(--text);}
+    .pi-det{font-size:11px;color:var(--text3);margin-top:2px;}
+    .pi-plus{width:26px;height:26px;border-radius:50%;background:var(--g50);border:1px solid var(--g100);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--g600);flex-shrink:0;line-height:1;}
+    .prod-empty{padding:14px;text-align:center;font-size:13px;color:var(--text3);}
+
+    /* ITEM CARDS */
+    .item-card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,60,30,.07);animation:slideIn .2s ease;}
+    @keyframes slideIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+    .ic-head{display:flex;align-items:center;gap:10px;padding:11px 12px 8px;}
+    .ic-num{width:22px;height:22px;border-radius:50%;background:var(--g50);color:var(--g600);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .ic-name{flex:1;font-size:13px;font-weight:500;color:var(--text);line-height:1.3;}
+    .ic-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:3px 6px;border-radius:7px;line-height:1;}
+    .ic-del:active{background:#fdecea;color:#c0392b;}
+    .ic-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 10px;}
+    .ig label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px;}
+    .ig-row{display:flex;align-items:center;gap:6px;}
+    .qty-inp{flex:1;border:1px solid var(--bdr);border-radius:8px;padding:8px;font-family:var(--font);font-size:16px;font-weight:600;color:var(--text);background:var(--bg);outline:none;text-align:right;min-width:0;-moz-appearance:textfield;}
+    .qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
+    .qty-inp:focus{border-color:var(--g500);background:#fff;}
+    .unit-tag{font-size:11px;font-weight:600;color:var(--g600);background:var(--g50);border:1px solid var(--g100);border-radius:6px;padding:3px 7px;white-space:nowrap;flex-shrink:0;}
+    .vol-val{font-size:15px;font-weight:600;color:var(--text);}
+    .vol-note{font-size:11px;color:var(--text3);margin-top:2px;}
+    .ic-foot{background:var(--g50);border-top:1px solid var(--g100);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;}
+    .ic-uprice{font-size:12px;color:var(--text3);}
+    .ic-total{font-size:15px;font-weight:600;color:var(--g700);}
+
+    /* EMPTY */
+    .empty-state{text-align:center;padding:40px 20px;}
+    .empty-ico{font-size:42px;opacity:.35;margin-bottom:10px;}
+    .empty-txt{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:3px;}
+    .empty-sub{font-size:13px;color:var(--text3);}
+
+    /* BOTTOM */
+    .bottom{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:12px 14px calc(12px + var(--safe-b));box-shadow:0 -4px 20px rgba(30,60,30,.1);z-index:20;}
+    .b-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+    .b-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;}
+    .b-val{font-family:var(--serif);font-size:22px;color:var(--text);}
+    .b-sacas{opacity:0;transition:opacity .3s;pointer-events:none;}
+    .b-sacas.show{opacity:1;pointer-events:auto;}
+    .b-val.green{color:var(--g700);}
+    .b-actions{display:flex;gap:9px;margin-top:10px;}
+    .btn-share{flex:1;padding:12px;border:1px solid var(--bdr);border-radius:10px;background:var(--g50);color:var(--g700);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .btn-save{flex:1;padding:12px;border:none;border-radius:10px;background:var(--g700);color:#fff;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .btn-share:active,.btn-save:active{transform:scale(.97);opacity:.88;}
+
+    /* DRAWER */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30;}
+    .drawer{position:fixed;bottom:0;left:0;right:0;z-index:31;background:var(--card);border-radius:18px 18px 0 0;padding-bottom:var(--safe-b);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(30,60,30,.15);animation:up .3s cubic-bezier(.32,.72,0,1);}
+    @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .drawer-handle{width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:12px auto 0;flex-shrink:0;}
+    .drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+    .drawer-title{font-family:var(--serif);font-size:22px;color:var(--text);}
+    .drawer-body{flex:1;overflow-y:auto;padding:12px;}
+    .hist-item{background:var(--bg);border:1px solid var(--bdr);border-radius:12px;padding:13px;margin-bottom:8px;}
+    .hist-cli{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;}
+    .hist-row{display:flex;justify-content:space-between;align-items:baseline;}
+    .hist-date{font-size:12px;color:var(--text3);}
+    .hist-total{font-size:14px;font-weight:600;color:var(--g600);}
+    .hist-det{font-size:12px;color:var(--text3);margin-top:2px;}
+    .hist-empty{text-align:center;padding:40px;color:var(--text3);font-size:14px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:220px;left:50%;transform:translateX(-50%);background:var(--g800);color:#fff;padding:9px 18px;border-radius:100px;font-size:13px;font-weight:500;z-index:50;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+    .toast.show{opacity:1;}
+
+    @media (prefers-color-scheme: dark) {
+      :root{--text:#e8f0e8;--text2:#9ab89a;--text3:#6a8a6a;--bg:#0e180e;--card:#162016;--bdr:#253525;--g50:#1a2e1a;--g100:#203020;}
+      .soja-bar{background:#162016;border-bottom:1px solid var(--bdr);}
+    }
+  </style>
+</head>
+<body>
+
+<div id="splash">
+  <div>
+    <div class="spl-icon">🌾</div>
+    <div class="spl-title">Barter Soja</div>
+    <div class="spl-sub">Simulador de negociação</div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header class="hdr">
+    <div class="hdr-left">
+      <span style="font-size:20px">🌾</span>
+      <span class="hdr-title">Barter Soja</span>
+    </div>
+    <button class="btn-ico" id="btn-hist">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </button>
+  </header>
+
+  <div class="soja-bar">
+    <span class="soja-lbl">SOJA</span>
+    <div class="soja-wrap">
+      <span>US$</span>
+      <input id="soja" type="number" min="0" step="0.01" placeholder="0,00" inputmode="decimal" />
+      <span>/sc</span>
+    </div>
+    <span class="funrural-note">&#x2212;1,63%<br>Funrural</span>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <span class="lbl">CLIENTE</span>
+      <input class="field" id="cliente" type="text" placeholder="Nome do cliente / fazenda" />
+    </div>
+
+    <div class="card">
+      <span class="lbl">PRODUTOS</span>
+      <div class="search-wrap">
+        <svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="busca" type="text" placeholder="Buscar produto…" autocomplete="off" />
+      </div>
+      <div class="prod-list" id="prod-list"></div>
+    </div>
+
+    <div id="cart-area"></div>
+  </div>
+
+  <div class="bottom">
+    <div class="b-row">
+      <span class="b-lbl">Total R$</span>
+      <span class="b-val" id="tot-brl">R$ 0,00</span>
+    </div>
+    <div class="b-row b-sacas" id="sacas-row">
+      <span class="b-lbl">Sacas de soja</span>
+      <span class="b-val green" id="tot-sacas">— sc</span>
+    </div>
+    <div class="b-actions">
+      <button class="btn-share" id="btn-share">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Compartilhar
+      </button>
+      <button class="btn-save" id="btn-save">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="hist-overlay" class="overlay hidden"></div>
+<div id="hist-drawer" class="drawer hidden">
+  <div class="drawer-handle"></div>
+  <div class="drawer-hdr">
+    <span class="drawer-title">Histórico</span>
+    <button class="btn-ico" id="btn-close-hist" style="background:rgba(0,0,0,.06);color:var(--text)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="hist-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var FUNRURAL = 0.9837;
+
+var PRODUTOS = [
+  {id:"p00",name:"ACTARA 250 WG 4X5 KG",  emb:5, unit:"KG",usd:33.066315440681784, brl:204.33333333333331},
+  {id:"p01",name:"ALADE 20 L",             emb:20,unit:"L", usd:39.878871204905892, brl:260.58333333333331},
+  {id:"p02",name:"AMISTAR TOP 20 L",       emb:20,unit:"L", usd:30.483645046483396, brl:188.30952380952382},
+  {id:"p03",name:"AMPLIGO 4X5 L",          emb:5, unit:"L", usd:42.868261346222148, brl:289.25},
+  {id:"p04",name:"ARVATICO 4X5 L",         emb:5, unit:"L", usd:79.981438270726599, brl:436.32142857142856},
+  {id:"p05",name:"CALARIS 20 L",           emb:20,unit:"L", usd:11.713528716994286, brl:64.166666666666671},
+  {id:"p06",name:"CRUISER 350 FS 4X5 L",  emb:5, unit:"L", usd:75.91424079954804,  brl:429.40476190476193},
+  {id:"p07",name:"CURYOM 550 EC 4x5 L",   emb:5, unit:"L", usd:11.469496868723571, brl:62.845238095238095},
+  {id:"p08",name:"CYPRESS 400 EC 20 L",   emb:20,unit:"L", usd:27.351902993675893, brl:169.04761904761907},
+  {id:"p09",name:"EDDUS 4X5 L",           emb:5, unit:"L", usd:9.130858322795893,  brl:50.023809523809533},
+  {id:"p10",name:"ELATUS 4X5 KG",         emb:5, unit:"KG",usd:73.636610215688037, brl:454.9404761904762},
+  {id:"p11",name:"ELESTALNEO 4X5 KG",     emb:5, unit:"KG",usd:121.18214865376554, brl:791.97619047619048},
+  {id:"p12",name:"ENGEO PLENO S 20 L",    emb:20,unit:"L", usd:20.986738951281435, brl:137.22619047619048},
+  {id:"p13",name:"FLEX 4X5 L",            emb:5, unit:"L", usd:10.025641766455179, brl:67.666666666666671},
+  {id:"p14",name:"FORTENZA 4X5 L",        emb:5, unit:"L", usd:255.3589932279466,  brl:67.666666666666671},
+  {id:"p15",name:"INFLUX 4X5 KG",         emb:5, unit:"KG",usd:140.70469651542265, brl:869.30952380952385},
+  {id:"p16",name:"INSTIVO 4X5 L",         emb:5, unit:"L", usd:33.391691238376069, brl:206.25},
+  {id:"p17",name:"INZAK ZEON 20 L",       emb:20,unit:"L", usd:14.052167262921962, brl:94.785714285714292},
+  {id:"p18",name:"MATCH EC 20 L BRC",     emb:20,unit:"L", usd:7.8700271067305358, brl:43.13095238095238},
+  {id:"p19",name:"MAXIM XL 4X5 L",        emb:5, unit:"L", usd:33.025643465970006, brl:191.33333333333334},
+  {id:"p20",name:"MIRAVIS DUO 20 L",      emb:20,unit:"L", usd:35.343946024541786, brl:230.97619047619051},
+  {id:"p21",name:"MIRAVIS PRO 20 L",      emb:20,unit:"L", usd:29.344829754553391, brl:191.79761904761907},
+  {id:"p22",name:"MITRION 20 L",          emb:20,unit:"L", usd:50.067200870208225, brl:327.20238095238096},
+  {id:"p23",name:"PRIMESTRA GOLD 20 L",   emb:20,unit:"L", usd:7.6259952584598212, brl:41.80952380952381},
+  {id:"p24",name:"PRIORI TOP 20 L",       emb:20,unit:"L", usd:30.483645046483396, brl:188.33333333333331},
+  {id:"p25",name:"POLYTRIN 20 L",         emb:20,unit:"L", usd:7.7683471699510704, brl:327.20238095238096},
+  {id:"p26",name:"PRIORI XTRA 20 L",      emb:20,unit:"L", usd:19.949603596130892, brl:134.5952380952381},
+  {id:"p27",name:"PROCLAIM 50 4X5 KG",    emb:5, unit:"KG",usd:66.783382476752138, brl:412.64285714285717},
+  {id:"p28",name:"REGLONE 20 L",          emb:20,unit:"L", usd:6.4261720044621429, brl:35.63095238095238},
+  {id:"p29",name:"SCORE FLEXI 4x5 L",     emb:5, unit:"L", usd:48.175954046110185, brl:297.67857142857144},
+  {id:"p30",name:"SEEKER 20 L",           emb:20,unit:"L", usd:41.72944605429214,  brl:272.73809523809524},
+  {id:"p31",name:"SCORE 4x5 L",           emb:5, unit:"L", usd:13.137047831906786, brl:35.63095238095238},
+  {id:"p32",name:"TILT 4x5 L",            emb:5, unit:"L", usd:11.733864704350179, brl:64.238095238095241},
+  {id:"p33",name:"VERDAVIS 20 L",         emb:20,unit:"L", usd:85.512826831529466, brl:558.88095238095241},
+  {id:"p34",name:"VICTRATO 12x1 L",       emb:1, unit:"L", usd:1158.6225436146397, brl:6681.083333333333},
+  {id:"p35",name:"INVENCIS 20 L",         emb:20,unit:"L", usd:82.950492424686942, brl:542.14285714285711}
+];
+
+var cart = [];
+
+function fmtBRL(n) {
+  return (n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function calcVol(item) {
+  return Math.ceil(item.qty / item.p.emb) * item.p.emb;
+}
+
+// ---- LISTA DE PRODUTOS ----
+function renderList(q) {
+  var el = document.getElementById('prod-list');
+  var f = (q||'').toLowerCase();
+  var visible = PRODUTOS
+    .filter(function(p){ return !cart.find(function(c){ return c.p.id===p.id; }); })
+    .filter(function(p){ return !f || p.name.toLowerCase().indexOf(f) >= 0; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+  if (!visible.length) {
+    el.innerHTML = '<div class="prod-empty">Todos os produtos já adicionados</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < visible.length; i++) {
+    var p = visible[i];
+    html += '<div class="pi" data-pid="' + p.id + '">'
+      + '<div><div class="pi-name">' + p.name + '</div>'
+      + '<div class="pi-det">Emb: ' + p.emb + ' ' + p.unit + ' &middot; R$ ' + fmtBRL(p.brl) + '/' + p.unit + '</div></div>'
+      + '<div class="pi-plus">+</div></div>';
+  }
+  el.innerHTML = html;
+
+  var rows = el.querySelectorAll('.pi');
+  for (var j = 0; j < rows.length; j++) {
+    (function(row) {
+      var pid = row.getAttribute('data-pid');
+      function doAdd(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var prod = null;
+        for (var k = 0; k < PRODUTOS.length; k++) {
+          if (PRODUTOS[k].id === pid) { prod = PRODUTOS[k]; break; }
+        }
+        if (prod) addItem(prod);
+      }
+      row.addEventListener('touchend', doAdd, {passive: false});
+      row.addEventListener('click', doAdd);
+    })(rows[j]);
+  }
+}
+
+// ---- CARRINHO ----
+function addItem(p) {
+  for (var i = 0; i < cart.length; i++) {
+    if (cart[i].p.id === p.id) return;
+  }
+  cart.push({p: p, qty: p.emb});
+  renderList(document.getElementById('busca').value);
+  renderCart();
+  toast(p.name.split(' ').slice(0,2).join(' ') + ' adicionado');
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function removeItem(id) {
+  cart = cart.filter(function(c){ return c.p.id !== id; });
+  renderList(document.getElementById('busca').value);
+  renderCart();
+}
+
+function setQty(id, val) {
+  for (var i = 0; i < cart.length; i++) {
+    if (cart[i].p.id === id) {
+      cart[i].qty = parseFloat(val) || 0;
+      var v = calcVol(cart[i]);
+      var vEl = document.getElementById('vol-' + id);
+      var tEl = document.getElementById('itot-' + id);
+      if (vEl) vEl.textContent = fmtBRL(v) + ' ' + cart[i].p.unit;
+      if (tEl) tEl.textContent = 'R$ ' + fmtBRL(v * cart[i].p.brl);
+      break;
+    }
+  }
+  renderSummary();
+}
+
+function renderCart() {
+  var area = document.getElementById('cart-area');
+  if (!cart.length) {
+    area.innerHTML = '<div class="empty-state"><div class="empty-ico">📦</div>'
+      + '<div class="empty-txt">Adicione produtos</div>'
+      + '<div class="empty-sub">Busque ou role a lista acima</div></div>';
+    renderSummary();
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < cart.length; i++) {
+    var item = cart[i];
+    var v = calcVol(item);
+    html += '<div class="item-card">'
+      + '<div class="ic-head">'
+      + '<div class="ic-num">' + (i+1) + '</div>'
+      + '<div class="ic-name">' + item.p.name + '</div>'
+      + '<button class="ic-del" data-delid="' + item.p.id + '">&#x2715;</button>'
+      + '</div>'
+      + '<div class="ic-body">'
+      + '<div class="ig"><label>QUANTIDADE</label>'
+      + '<div class="ig-row">'
+      + '<input class="qty-inp" type="number" inputmode="decimal" min="0" step="' + item.p.emb + '" value="' + item.qty + '" data-qid="' + item.p.id + '" />'
+      + '<span class="unit-tag">' + item.p.unit + '</span>'
+      + '</div></div>'
+      + '<div class="ig"><label>VOLUME EMB. INTEIRA</label>'
+      + '<div class="vol-val" id="vol-' + item.p.id + '">' + fmtBRL(v) + ' ' + item.p.unit + '</div>'
+      + '<div class="vol-note">Emb: ' + item.p.emb + ' ' + item.p.unit + '</div>'
+      + '</div></div>'
+      + '<div class="ic-foot">'
+      + '<span class="ic-uprice">R$ ' + fmtBRL(item.p.brl) + '/' + item.p.unit + '</span>'
+      + '<span class="ic-total" id="itot-' + item.p.id + '">R$ ' + fmtBRL(v * item.p.brl) + '</span>'
+      + '</div></div>';
+  }
+  area.innerHTML = html;
+
+  var dels = area.querySelectorAll('[data-delid]');
+  for (var d = 0; d < dels.length; d++) {
+    (function(btn) {
+      var did = btn.getAttribute('data-delid');
+      function doDel(e) { e.preventDefault(); removeItem(did); }
+      btn.addEventListener('touchend', doDel, {passive: false});
+      btn.addEventListener('click', doDel);
+    })(dels[d]);
+  }
+
+  var inps = area.querySelectorAll('[data-qid]');
+  for (var q = 0; q < inps.length; q++) {
+    (function(inp) {
+      inp.addEventListener('input', function() {
+        setQty(inp.getAttribute('data-qid'), inp.value);
+      });
+    })(inps[q]);
+  }
+
+  renderSummary();
+}
+
+// ---- RESUMO ----
+function renderSummary() {
+  var sojaRaw = parseFloat(document.getElementById('soja').value) || 0;
+  // Desconto Funrural: preço efetivo = sojaRaw × 0,9837
+  var sojaEfetivo = sojaRaw * FUNRURAL;
+
+  var totBRL = 0, totSacas = 0;
+  for (var i = 0; i < cart.length; i++) {
+    var v = calcVol(cart[i]);
+    totBRL += v * cart[i].p.brl;
+    if (sojaEfetivo > 0) {
+      totSacas += (v * cart[i].p.usd) / sojaEfetivo;
+    }
+  }
+
+  document.getElementById('tot-brl').textContent = 'R$ ' + fmtBRL(totBRL);
+
+  var row = document.getElementById('sacas-row');
+  if (cart.length >= 2 && sojaEfetivo > 0) {
+    document.getElementById('tot-sacas').textContent = fmtBRL(totSacas) + ' sc';
+    row.classList.add('show');
+  } else {
+    row.classList.remove('show');
+  }
+}
+
+// ---- COMPARTILHAR ----
+function compartilhar() {
+  if (!cart.length) { toast('⚠ Adicione produtos primeiro'); return; }
+  var sojaRaw = parseFloat(document.getElementById('soja').value) || 0;
+  var sojaEfetivo = sojaRaw * FUNRURAL;
+  var cli = document.getElementById('cliente').value || 'Cliente';
+  var totBRL = 0, totSacas = 0;
+  var linhas = [];
+  for (var i = 0; i < cart.length; i++) {
+    var v = calcVol(cart[i]);
+    totBRL += v * cart[i].p.brl;
+    if (sojaEfetivo > 0) totSacas += (v * cart[i].p.usd) / sojaEfetivo;
+    linhas.push((i+1) + '. ' + cart[i].p.name + '\n   ' + fmtBRL(v) + ' ' + cart[i].p.unit + ' → R$ ' + fmtBRL(v * cart[i].p.brl));
+  }
+  var partes = ['🌾 *Simulação Barter Soja*', '👤 ' + cli];
+  if (sojaRaw) partes.push('💵 Soja: US$ ' + sojaRaw.toFixed(2) + '/sc  (líq. Funrural: US$ ' + sojaEfetivo.toFixed(2) + ')');
+  partes.push('');
+  partes = partes.concat(linhas);
+  partes.push('');
+  partes.push('💰 *Total: R$ ' + fmtBRL(totBRL) + '*');
+  if (totSacas > 0) partes.push('🌾 *Sacas de soja: ' + fmtBRL(totSacas) + ' sc*');
+  var txt = partes.join('\n');
+
+  if (navigator.share) {
+    navigator.share({title: 'Barter Soja', text: txt}).catch(function() { copiar(txt); });
+  } else {
+    copiar(txt);
+  }
+}
+
+function copiar(txt) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt)
+      .then(function(){ toast('✓ Copiado!'); })
+      .catch(function(){ toast('Compartilhamento indisponível'); });
+  } else {
+    toast('Compartilhamento indisponível');
+  }
+}
+
+// ---- SALVAR ----
+function salvar() {
+  if (!cart.length) { toast('⚠ Adicione produtos primeiro'); return; }
+  var sojaRaw = parseFloat(document.getElementById('soja').value) || 0;
+  var sojaEfetivo = sojaRaw * FUNRURAL;
+  var cli = document.getElementById('cliente').value || 'Cliente';
+  var totBRL = 0, totSacas = 0;
+  var items = [];
+  for (var i = 0; i < cart.length; i++) {
+    var v = calcVol(cart[i]);
+    totBRL += v * cart[i].p.brl;
+    if (sojaEfetivo > 0) totSacas += (v * cart[i].p.usd) / sojaEfetivo;
+    items.push({nome: cart[i].p.name, qty: cart[i].qty, vol: v, unit: cart[i].p.unit, total: v * cart[i].p.brl});
+  }
+  try {
+    var h = JSON.parse(localStorage.getItem('barter_hist') || '[]');
+    h.unshift({cliente: cli, sojaRaw: sojaRaw, sojaEfetivo: sojaEfetivo, items: items, totBRL: totBRL, totSacas: totSacas, dt: new Date().toISOString()});
+    localStorage.setItem('barter_hist', JSON.stringify(h.slice(0, 30)));
+    toast('✓ Simulação salva!');
+    if (navigator.vibrate) navigator.vibrate([30,20,30]);
+  } catch(e) {
+    toast('Erro ao salvar');
+  }
+}
+
+// ---- HISTÓRICO ----
+function abrirHist() {
+  document.getElementById('hist-overlay').classList.remove('hidden');
+  document.getElementById('hist-drawer').classList.remove('hidden');
+  var h = [];
+  try { h = JSON.parse(localStorage.getItem('barter_hist') || '[]'); } catch(e){}
+  var el = document.getElementById('hist-list');
+  if (!h.length) { el.innerHTML = '<div class="hist-empty">Nenhuma simulação salva</div>'; return; }
+  var html = '';
+  for (var i = 0; i < h.length; i++) {
+    var s = h[i];
+    var d = new Date(s.dt);
+    var ds = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})
+           + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    html += '<div class="hist-item">'
+      + '<div class="hist-cli">' + (s.cliente||'Cliente') + '</div>'
+      + '<div class="hist-row"><span class="hist-date">' + ds + '</span><span class="hist-total">R$ ' + fmtBRL(s.totBRL||0) + '</span></div>'
+      + '<div class="hist-det">' + (s.items||[]).length + ' produto(s) &middot; ' + fmtBRL(s.totSacas||0) + ' sc &middot; Soja US$ ' + (s.sojaRaw||0).toFixed(2) + '</div>'
+      + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function fecharHist() {
+  document.getElementById('hist-overlay').classList.add('hidden');
+  document.getElementById('hist-drawer').classList.add('hidden');
+}
+
+// ---- TOAST ----
+var toastT;
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+// ---- INIT ----
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    document.getElementById('splash').classList.add('out');
+    setTimeout(function() {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('app').classList.remove('hidden');
+    }, 500);
+  }, 1100);
+
+  document.getElementById('busca').addEventListener('input', function(e){ renderList(e.target.value); });
+  document.getElementById('soja').addEventListener('input', renderSummary);
+  document.getElementById('btn-hist').addEventListener('click', abrirHist);
+  document.getElementById('btn-close-hist').addEventListener('click', fecharHist);
+  document.getElementById('hist-overlay').addEventListener('click', fecharHist);
+  document.getElementById('btn-share').addEventListener('click', compartilhar);
+  document.getElementById('btn-save').addEventListener('click', salvar);
+
+  renderList('');
+  renderCart();
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
