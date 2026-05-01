@@ -4,15 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#2e6b2e" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Barter" />
   <title>Barter Soja</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -27,8 +20,8 @@
       --bg:       #f5f7f5;
       --card:     #ffffff;
       --bdr:      #cccccc;
-      --font:'DM Sans',system-ui,sans-serif;
-      --serif:'DM Serif Display',Georgia,serif;
+      --font:system-ui,-apple-system,'Segoe UI',sans-serif;
+      --serif:Georgia,'Times New Roman',serif;
       --safe-b:env(safe-area-inset-bottom,0px);
       --safe-t:env(safe-area-inset-top,0px);
     }
@@ -36,12 +29,6 @@
     body{font-family:var(--font);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;}
 
     /* SPLASH */
-    #splash{position:fixed;inset:0;z-index:999;background:var(--verde-hdr);display:flex;align-items:center;justify-content:center;}
-    .spl-icon{font-size:52px;animation:float 2s ease-in-out infinite;margin-bottom:14px;}
-    .spl-title{font-family:var(--serif);font-size:34px;color:#fff;text-align:center;}
-    .spl-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:6px;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-
     #app{height:100%;display:flex;flex-direction:column;}
     .hidden{display:none!important;}
 
@@ -154,15 +141,7 @@
 </head>
 <body>
 
-<div id="splash">
-  <div>
-    <div class="spl-icon">🌾</div>
-    <div class="spl-title">Barter Soja</div>
-    <div class="spl-sub">Simulador de negociação</div>
-  </div>
-</div>
-
-<div id="app" class="hidden">
+<div id="app">
   <header class="hdr">
     <div class="hdr-left">
       <span style="font-size:22px">🌾</span>
@@ -490,24 +469,6 @@ function toast(msg){
   clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2500);
 }
 
-// Executa assim que o script é lido — não depende de nenhum evento
-(function(){
-  function showApp(){
-    var splash = document.getElementById('splash');
-    var app    = document.getElementById('app');
-    if (!splash || !app) return;
-    if (app.classList.contains('hidden') === false) return; // já mostrou
-    splash.style.display = 'none';
-    app.classList.remove('hidden');
-  }
-  // Tenta após 800ms
-  setTimeout(showApp, 800);
-  // Tenta no DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(showApp, 100); });
-  // Tenta no load completo
-  window.addEventListener('load', function(){ showApp(); });
-})();
-
 window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('busca').addEventListener('input',function(e){renderList(e.target.value);});
   document.getElementById('soja').addEventListener('input',renderSummary);
@@ -520,19 +481,13 @@ window.addEventListener('DOMContentLoaded',function(){
   renderCart();
 });
 
-// Service Worker desativado temporariamente
-// Para reativar: descomentar o bloco abaixo
-/*
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
-*/
-// Limpa qualquer SW antigo que possa estar travando
+// Limpa qualquer SW antigo instalado
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(function(regs){
     regs.forEach(function(r){ r.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
   });
 }
 </script>
