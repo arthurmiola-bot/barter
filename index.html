@@ -36,8 +36,7 @@
     body{font-family:var(--font);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;}
 
     /* SPLASH */
-    #splash{position:fixed;inset:0;z-index:999;background:var(--verde-hdr);display:flex;align-items:center;justify-content:center;transition:opacity .5s,transform .5s;}
-    #splash.out{opacity:0;transform:scale(1.04);pointer-events:none;}
+    #splash{position:fixed;inset:0;z-index:999;background:var(--verde-hdr);display:flex;align-items:center;justify-content:center;}
     .spl-icon{font-size:52px;animation:float 2s ease-in-out infinite;margin-bottom:14px;}
     .spl-title{font-family:var(--serif);font-size:34px;color:#fff;text-align:center;}
     .spl-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:6px;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
@@ -491,17 +490,25 @@ function toast(msg){
   clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2500);
 }
 
-window.addEventListener('DOMContentLoaded',function(){
-  // Show app - use both short timeout AND load event as fallback
+// Executa assim que o script é lido — não depende de nenhum evento
+(function(){
   function showApp(){
-    var splash=document.getElementById('splash');
-    var app=document.getElementById('app');
-    splash.classList.add('out');
+    var splash = document.getElementById('splash');
+    var app    = document.getElementById('app');
+    if (!splash || !app) return;
+    if (app.classList.contains('hidden') === false) return; // já mostrou
+    splash.style.display = 'none';
     app.classList.remove('hidden');
-    setTimeout(function(){ splash.style.display='none'; }, 600);
   }
-  setTimeout(showApp, 900);
-  window.addEventListener('load', function(){ setTimeout(showApp, 200); });
+  // Tenta após 800ms
+  setTimeout(showApp, 800);
+  // Tenta no DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(showApp, 100); });
+  // Tenta no load completo
+  window.addEventListener('load', function(){ showApp(); });
+})();
+
+window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('busca').addEventListener('input',function(e){renderList(e.target.value);});
   document.getElementById('soja').addEventListener('input',renderSummary);
   document.getElementById('btn-hist').addEventListener('click',abrirHist);
