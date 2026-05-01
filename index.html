@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -492,10 +492,16 @@ function toast(msg){
 }
 
 window.addEventListener('DOMContentLoaded',function(){
-  setTimeout(function(){
-    document.getElementById('splash').classList.add('out');
-    setTimeout(function(){document.getElementById('splash').style.display='none';document.getElementById('app').classList.remove('hidden');},500);
-  },1100);
+  // Show app - use both short timeout AND load event as fallback
+  function showApp(){
+    var splash=document.getElementById('splash');
+    var app=document.getElementById('app');
+    splash.classList.add('out');
+    app.classList.remove('hidden');
+    setTimeout(function(){ splash.style.display='none'; }, 600);
+  }
+  setTimeout(showApp, 900);
+  window.addEventListener('load', function(){ setTimeout(showApp, 200); });
   document.getElementById('busca').addEventListener('input',function(e){renderList(e.target.value);});
   document.getElementById('soja').addEventListener('input',renderSummary);
   document.getElementById('btn-hist').addEventListener('click',abrirHist);
