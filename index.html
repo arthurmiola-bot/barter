@@ -326,7 +326,7 @@ function renderList(q){
 
 function addItem(p){
   for(var i=0;i<cart.length;i++){if(cart[i].p.id===p.id)return;}
-  cart.push({p:p,qty:p.emb});
+  cart.push({p:p,qty:0});
   renderList(document.getElementById('busca').value);
   renderCart();
   toast(p.name.split(' ').slice(0,2).join(' ')+' adicionado');
@@ -369,7 +369,7 @@ function renderCart(){
       +'<button class="ic-del" data-delid="'+item.p.id+'">&#x2715;</button></div>'
       +'<div class="ic-body">'
       +'<div class="ig"><label>Quantidade</label><div class="ig-row">'
-      +'<input class="qty-inp" type="number" inputmode="decimal" min="0" step="'+item.p.emb+'" value="'+item.qty+'" data-qid="'+item.p.id+'" />'
+      +'<input class="qty-inp" type="number" inputmode="decimal" min="0" step="'+item.p.emb+'" value="\'+( item.qty || '' )+\'" a-qid="'+item.p.id+'" />'
       +'<span class="unit-tag">'+item.p.unit+'</span></div></div>'
       +'<div class="ig"><label>Vol. emb. inteira</label>'
       +'<div class="vol-val" id="vol-'+item.p.id+'">'+fmtBRL(v)+' '+item.p.unit+'</div>'
