@@ -520,9 +520,19 @@ window.addEventListener('DOMContentLoaded',function(){
   renderCart();
 });
 
+// Service Worker desativado temporariamente
+// Para reativar: descomentar o bloco abaixo
+/*
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+*/
+// Limpa qualquer SW antigo que possa estar travando
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
   });
 }
 </script>
