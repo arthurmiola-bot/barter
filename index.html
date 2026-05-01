@@ -4,8 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#2e6b2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Barter" />
   <title>Barter Soja</title>
-
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -20,8 +27,8 @@
       --bg:       #f5f7f5;
       --card:     #ffffff;
       --bdr:      #cccccc;
-      --font:system-ui,-apple-system,'Segoe UI',sans-serif;
-      --serif:Georgia,'Times New Roman',serif;
+      --font:'DM Sans',system-ui,sans-serif;
+      --serif:'DM Serif Display',Georgia,serif;
       --safe-b:env(safe-area-inset-bottom,0px);
       --safe-t:env(safe-area-inset-top,0px);
     }
@@ -29,6 +36,13 @@
     body{font-family:var(--font);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;}
 
     /* SPLASH */
+    #splash{position:fixed;inset:0;z-index:999;background:var(--verde-hdr);display:flex;align-items:center;justify-content:center;transition:opacity .5s,transform .5s;}
+    #splash.out{opacity:0;transform:scale(1.04);pointer-events:none;}
+    .spl-icon{font-size:52px;animation:float 2s ease-in-out infinite;margin-bottom:14px;}
+    .spl-title{font-family:var(--serif);font-size:34px;color:#fff;text-align:center;}
+    .spl-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:6px;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
     #app{height:100%;display:flex;flex-direction:column;}
     .hidden{display:none!important;}
 
@@ -141,7 +155,15 @@
 </head>
 <body>
 
-<div id="app">
+<div id="splash">
+  <div>
+    <div class="spl-icon">🌾</div>
+    <div class="spl-title">Barter Soja</div>
+    <div class="spl-sub">Simulador de negociação</div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
   <header class="hdr">
     <div class="hdr-left">
       <span style="font-size:22px">🌾</span>
@@ -304,7 +326,7 @@ function renderList(q){
 
 function addItem(p){
   for(var i=0;i<cart.length;i++){if(cart[i].p.id===p.id)return;}
-  cart.push({p:p,qty:0});
+  cart.push({p:p,qty:p.emb});
   renderList(document.getElementById('busca').value);
   renderCart();
   toast(p.name.split(' ').slice(0,2).join(' ')+' adicionado');
@@ -347,7 +369,7 @@ function renderCart(){
       +'<button class="ic-del" data-delid="'+item.p.id+'">&#x2715;</button></div>'
       +'<div class="ic-body">'
       +'<div class="ig"><label>Quantidade</label><div class="ig-row">'
-      +'<input class="qty-inp" type="number" inputmode="decimal" min="0" step="'+item.p.emb+'" value="\'+( item.qty || '' )+\'" a-qid="'+item.p.id+'" />'
+      +'<input class="qty-inp" type="number" inputmode="decimal" min="0" step="'+item.p.emb+'" value="'+item.qty+'" data-qid="'+item.p.id+'" />'
       +'<span class="unit-tag">'+item.p.unit+'</span></div></div>'
       +'<div class="ig"><label>Vol. emb. inteira</label>'
       +'<div class="vol-val" id="vol-'+item.p.id+'">'+fmtBRL(v)+' '+item.p.unit+'</div>'
@@ -470,6 +492,10 @@ function toast(msg){
 }
 
 window.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    document.getElementById('splash').classList.add('out');
+    setTimeout(function(){document.getElementById('splash').style.display='none';document.getElementById('app').classList.remove('hidden');},500);
+  },1100);
   document.getElementById('busca').addEventListener('input',function(e){renderList(e.target.value);});
   document.getElementById('soja').addEventListener('input',renderSummary);
   document.getElementById('btn-hist').addEventListener('click',abrirHist);
@@ -481,13 +507,9 @@ window.addEventListener('DOMContentLoaded',function(){
   renderCart();
 });
 
-// Limpa qualquer SW antigo instalado
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(function(regs){
-    regs.forEach(function(r){ r.unregister(); });
-  });
-  caches.keys().then(function(keys){
-    keys.forEach(function(k){ caches.delete(k); });
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
 </script>
