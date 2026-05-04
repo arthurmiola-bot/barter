@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#2e6b2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Barter" />
+  <title>Barter Geral</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --verde:    #2e6b2e;
+      --verde-hdr:#256325;
+      --verde-btn:#1e5c1e;
+      --verde-lt: #e8f5e8;
+      --verde-bd: #b2d9b2;
+      --azul:     #1a5276;
+      --azul-lt:  #d6eaf8;
+      --azul-bd:  #85c1e9;
+      --text:     #111111;
+      --text2:    #333333;
+      --text3:    #555555;
+      --bg:       #f5f7f5;
+      --card:     #ffffff;
+      --bdr:      #cccccc;
+      --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-t: env(safe-area-inset-top, 0px);
+    }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); }
+    body { font-family: var(--font); color: var(--text); -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+    #app { height: 100%; display: flex; flex-direction: column; }
+    .hidden { display: none !important; }
+
+    /* HEADER */
+    .hdr { background: var(--verde-hdr); padding: calc(var(--safe-t) + 10px) 16px 10px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .hdr-left { display: flex; align-items: center; gap: 9px; }
+    .hdr-title { font-size: 20px; font-weight: 600; color: #fff; }
+    .btn-ico { width: 36px; height: 36px; border: none; background: rgba(255,255,255,.2); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; flex-shrink: 0; }
+    .btn-ico:active { background: rgba(255,255,255,.35); }
+
+    /* PRECO BARS */
+    .preco-bars { background: var(--verde); padding: 8px 14px; display: flex; gap: 8px; flex-shrink: 0; }
+    .preco-box { flex: 1; display: flex; align-items: center; background: rgba(255,255,255,.15); border-radius: 9px; border: 1.5px solid rgba(255,255,255,.3); padding: 0 8px; }
+    .preco-box span { font-size: 11px; color: rgba(255,255,255,.9); white-space: nowrap; font-weight: 600; }
+    .preco-box input { flex: 1; background: none; border: none; outline: none; font-size: 16px; font-weight: 700; color: #fff; text-align: center; padding: 7px 3px; -moz-appearance: textfield; min-width: 0; }
+    .preco-box input::placeholder { color: rgba(255,255,255,.4); }
+    .preco-box input::-webkit-outer-spin-button, .preco-box input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .preco-label { font-size: 9px; color: rgba(255,255,255,.7); white-space: nowrap; text-align: center; margin-top: 1px; }
+
+    /* SCROLL */
+    .scroll { flex: 1; overflow-y: auto; padding: 10px 12px; padding-bottom: calc(250px + var(--safe-b)); -webkit-overflow-scrolling: touch; }
+
+    /* CARDS */
+    .card { background: var(--card); border: 1.5px solid var(--bdr); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+    .lbl { display: block; font-size: 10px; font-weight: 700; letter-spacing: .12em; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; }
+    .field { width: 100%; border: 1.5px solid var(--bdr); border-radius: 9px; padding: 10px 12px; font-size: 15px; color: var(--text); background: #fff; outline: none; }
+    .field:focus { border-color: var(--verde); }
+
+    /* ABAS DE CATEGORIA */
+    .cat-tabs { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab { flex-shrink: 0; padding: 7px 12px; border-radius: 100px; border: 1.5px solid var(--bdr); background: #fff; font-size: 12px; font-weight: 600; color: var(--text3); cursor: pointer; white-space: nowrap; transition: all .15s; }
+    .cat-tab.active { background: var(--verde-btn); color: #fff; border-color: var(--verde-btn); }
+    .cat-tab .badge { display: inline-block; background: rgba(255,255,255,.35); border-radius: 100px; padding: 0 5px; font-size: 10px; margin-left: 4px; }
+    .cat-tab:not(.active) .badge { background: var(--verde-lt); color: var(--verde-btn); }
+
+    /* SEARCH */
+    .search-wrap { position: relative; margin-bottom: 8px; }
+    .search-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text3); }
+    .search-input { width: 100%; border: 1.5px solid var(--bdr); border-radius: 9px; padding: 10px 12px 10px 34px; font-size: 14px; color: var(--text); background: #fff; outline: none; }
+    .search-input:focus { border-color: var(--verde); }
+
+    /* PRODUCT LIST */
+    .prod-list { border: 1.5px solid var(--bdr); border-radius: 10px; overflow: hidden; max-height: 240px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; }
+    .pi { display: flex; align-items: center; padding: 10px 12px; border-bottom: 1px solid #eeeeee; user-select: none; }
+    .pi:last-child { border-bottom: none; }
+    .pi-info { flex: 1; pointer-events: none; }
+    .pi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .pi-det { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .pi-plus { width: 30px; height: 30px; border-radius: 50%; background: var(--verde); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: #fff; font-size: 20px; line-height: 1; font-weight: 300; }
+    .pi-plus:active { background: var(--verde-btn); transform: scale(.92); }
+    .prod-empty { padding: 16px; text-align: center; font-size: 13px; color: var(--text3); }
+
+    /* ITEM CARDS */
+    .item-card { border: 1.5px solid var(--bdr); border-radius: 14px; margin-bottom: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.06); animation: slideIn .2s ease; }
+    .item-card.syng { border-color: var(--azul-bd); }
+    @keyframes slideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .ic-head { display: flex; align-items: center; gap: 9px; padding: 10px 12px 7px; background: var(--card); }
+    .ic-num { width: 22px; height: 22px; border-radius: 50%; background: var(--verde-lt); color: var(--verde-btn); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--verde-bd); }
+    .ic-num.syng { background: var(--azul-lt); color: var(--azul); border-color: var(--azul-bd); }
+    .ic-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .ic-classe { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 100px; flex-shrink: 0; }
+    .ic-classe.syng { background: var(--azul-lt); color: var(--azul); }
+    .ic-classe.other { background: var(--verde-lt); color: var(--verde-btn); }
+    .ic-del { background: none; border: 1.5px solid var(--bdr); cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 6px; border-radius: 7px; line-height: 1; flex-shrink: 0; }
+    .ic-del:active { background: #fdecea; color: #c0392b; }
+    .ic-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 10px; background: var(--card); }
+    .ig label { font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--text3); display: block; margin-bottom: 4px; text-transform: uppercase; }
+    .ig-row { display: flex; align-items: center; gap: 5px; }
+    .qty-inp { flex: 1; border: 1.5px solid var(--bdr); border-radius: 8px; padding: 8px 7px; font-size: 16px; font-weight: 700; color: var(--text); background: #fff; outline: none; text-align: right; min-width: 0; -moz-appearance: textfield; }
+    .qty-inp::-webkit-outer-spin-button, .qty-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .qty-inp:focus { border-color: var(--verde); }
+    .unit-tag { font-size: 11px; font-weight: 700; color: var(--verde-btn); background: var(--verde-lt); border: 1.5px solid var(--verde-bd); border-radius: 6px; padding: 3px 6px; white-space: nowrap; flex-shrink: 0; }
+    .vol-val { font-size: 15px; font-weight: 700; color: var(--text); }
+    .vol-note { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .ic-foot { background: var(--verde-lt); border-top: 1.5px solid var(--verde-bd); padding: 7px 12px; display: flex; justify-content: space-between; align-items: center; }
+    .ic-foot.syng { background: var(--azul-lt); border-top-color: var(--azul-bd); }
+    .ic-uprice { font-size: 11px; color: var(--text3); font-weight: 500; }
+    .ic-total { font-size: 15px; font-weight: 700; color: var(--verde-btn); }
+    .ic-total.syng { color: var(--azul); }
+
+    /* EMPTY */
+    .empty-state { text-align: center; padding: 36px 20px; }
+    .empty-ico { font-size: 38px; opacity: .3; margin-bottom: 10px; }
+    .empty-txt { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 3px; }
+    .empty-sub { font-size: 13px; color: var(--text3); }
+
+    /* BOTTOM */
+    .bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid var(--bdr); padding: 10px 14px calc(10px + var(--safe-b)); box-shadow: 0 -4px 20px rgba(0,0,0,.1); z-index: 20; }
+    .b-totais { display: flex; gap: 8px; margin-bottom: 8px; }
+    .b-box { flex: 1; background: var(--bg); border: 1.5px solid var(--bdr); border-radius: 10px; padding: 7px 10px; }
+    .b-box-lbl { font-size: 9px; font-weight: 700; letter-spacing: .08em; color: var(--text3); text-transform: uppercase; margin-bottom: 2px; }
+    .b-box-val { font-size: 17px; font-weight: 700; color: var(--text); }
+    .b-box-val.green { color: var(--verde-btn); }
+    .b-box-val.azul { color: var(--azul); }
+    .b-sacas { background: var(--verde-lt); border: 1.5px solid var(--verde-bd); border-radius: 10px; padding: 7px 12px; margin-bottom: 8px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    .b-sacas.show { opacity: 1; pointer-events: auto; }
+    .b-sacas-linha { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 0; }
+    .b-sacas-total { border-top: 1px solid var(--verde-bd); margin-top: 4px; padding-top: 5px; }
+    .b-sacas-lbl { font-size: 11px; font-weight: 700; color: var(--verde-btn); }
+    .b-sacas-val { font-size: 18px; font-weight: 700; color: var(--verde-btn); }
+    .b-sacas-val.azul { color: var(--azul); }
+    .b-sacas-val.green { color: var(--verde-btn); }
+    .b-actions { display: flex; gap: 9px; }
+    .btn-share { flex: 1; padding: 11px; border: 2px solid var(--verde); border-radius: 10px; background: #fff; color: var(--verde-btn); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-save { flex: 1; padding: 11px; border: none; border-radius: 10px; background: var(--verde-btn); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-share:active { background: var(--verde-lt); }
+    .btn-save:active { opacity: .85; }
+
+    /* DRAWER */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; }
+    .drawer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 31; background: #fff; border-radius: 20px 20px 0 0; padding-bottom: var(--safe-b); max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 -8px 40px rgba(0,0,0,.15); animation: up .3s cubic-bezier(.32,.72,0,1); }
+    @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .drawer-handle { width: 36px; height: 4px; background: var(--bdr); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+    .drawer-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1.5px solid var(--bdr); flex-shrink: 0; }
+    .drawer-title { font-size: 20px; font-weight: 600; color: var(--text); }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .hist-item { background: var(--bg); border: 1.5px solid var(--bdr); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+    .hist-cli { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .hist-row { display: flex; justify-content: space-between; align-items: baseline; }
+    .hist-date { font-size: 12px; color: var(--text3); }
+    .hist-total { font-size: 14px; font-weight: 700; color: var(--verde-btn); }
+    .hist-det { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .hist-empty { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 260px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 600; z-index: 50; white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="hdr">
+    <div class="hdr-left">
+      <span style="font-size:20px">&#127806;</span>
+      <span class="hdr-title">Barter Geral</span>
+    </div>
+    <button class="btn-ico" id="btn-hist">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </button>
+  </header>
+
+  <div class="preco-bars">
+    <div>
+      <div class="preco-box">
+        <span>US$</span>
+        <input id="soja-usd" type="number" min="0" step="0.01" placeholder="0,00" inputmode="decimal" />
+        <span>/sc</span>
+      </div>
+      <div class="preco-label">Soja Syngenta (US$)</div>
+    </div>
+    <div>
+      <div class="preco-box">
+        <span>R$</span>
+        <input id="soja-brl" type="number" min="0" step="0.01" placeholder="0,00" inputmode="decimal" />
+        <span>/sc</span>
+      </div>
+      <div class="preco-label">Soja outros (R$) -1,63% Funrural</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <span class="lbl">Cliente</span>
+      <input class="field" id="cliente" type="text" placeholder="Nome do cliente / fazenda" />
+    </div>
+
+    <div class="card">
+      <span class="lbl">Produtos</span>
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="search-wrap">
+        <svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="busca" type="text" placeholder="Buscar produto..." autocomplete="off" />
+      </div>
+      <div class="prod-list" id="prod-list"></div>
+    </div>
+
+    <div id="cart-area"></div>
+  </div>
+
+  <div class="bottom">
+    <div class="b-totais">
+      <div class="b-box" style="flex:1">
+        <div class="b-box-lbl">Total R$</div>
+        <div class="b-box-val" id="tot-brl">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="b-sacas" id="sacas-row">
+      <div class="b-sacas-linha">
+        <span class="b-sacas-lbl">Syngenta</span>
+        <span class="b-sacas-val azul" id="tot-sacas-syng">-- sc</span>
+      </div>
+      <div class="b-sacas-linha">
+        <span class="b-sacas-lbl">Outros</span>
+        <span class="b-sacas-val green" id="tot-sacas-outros">-- sc</span>
+      </div>
+      <div class="b-sacas-linha b-sacas-total">
+        <span class="b-sacas-lbl">Total sacas</span>
+        <span class="b-sacas-val" id="tot-sacas">-- sc</span>
+      </div>
+    </div>
+    <div class="b-actions">
+      <button class="btn-share" id="btn-share">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Compartilhar
+      </button>
+      <button class="btn-save" id="btn-save">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="hist-overlay" class="overlay hidden"></div>
+<div id="hist-drawer" class="drawer hidden">
+  <div class="drawer-handle"></div>
+  <div class="drawer-hdr">
+    <span class="drawer-title">Historico</span>
+    <button class="btn-ico" id="btn-close-hist" style="background:rgba(0,0,0,.08);color:#333">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="hist-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var FUNRURAL = 0.9837;
+
+var P = [
+  ["e01","AGRI-K 12,5L",12.5,"L",0,47.633477633477632,"Especialidade"],
+  ["e02","BIG RED 10L",10,"L",0,142.15007215007219,"Especialidade"],
+  ["e03","BOOSTER INFINITY 10L",10,"L",0,190.54834054834058,"Especialidade"],
+  ["e04","BOOSTER PRO 20L",20,"L",0,151.22655122655124,"Especialidade"],
+  ["e05","BORO SUPER 10L",10,"L",0,31.746031746031747,"Especialidade"],
+  ["e06","CAL SUPER 10 LT",10,"L",0,31.962481962481963,"Especialidade"],
+  ["e07","CONCENTRAT FIX 5L",5,"L",0,274.17027417027418,"Especialidade"],
+  ["e08","CONCENTRAT MAG 10L",10,"L",0,58.975468975468978,"Especialidade"],
+  ["e09","CONCENTRAT MN 10L",10,"L",0,45.367965367965375,"Especialidade"],
+  ["e10","FERRIFLO 10L",10,"L",0,128.55699855699856,"Especialidade"],
+  ["e11","FLUIFLEX MAX",5,"L",0,63.492063492063494,"Especialidade"],
+  ["e12","FREEFOS 10L",10,"L",0,36.291486291486294,"Especialidade"],
+  ["e13","KMAX 10L",10,"L",0,32.972582972582977,"Especialidade"],
+  ["e14","MAXI ZINC 10 L",1,"L",0,108.88888888888889,"Especialidade"],
+  ["e15","NITAMIN 1000L",1000,"L",0,13.607503607503608,"Especialidade"],
+  ["e16","NITAMIN 20L",20,"L",0,15.873015873015873,"Especialidade"],
+  ["e17","REFORCE ULTRA",10,"L",0,136.10389610389609,"Especialidade"],
+  ["e18","AIR TRUCK",5,"L",0,73.593073593073598,"Especialidade"],
+  ["e19","BIOCEL",5,"L",0,176.76767676767676,"Especialidade"],
+  ["e20","MEGATRON",5,"L",0,54.545454545454547,"Especialidade"],
+  ["e21","PHOS-UP 1,5 X10",1.5,"L",0,606.06060606060612,"Especialidade"],
+  ["e22","PREV-AM",5,"L",0,85.137085137085137,"Especialidade"],
+  ["e23","WETCIT 1X1000",1000,"L",0,71.717171717171738,"Especialidade"],
+  ["e24","WETCIT 1X20",20,"L",0,77.633477633477639,"Especialidade"],
+  ["e25","WETCIT 1X200",200,"L",0,74.819624819624835,"Especialidade"],
+  ["e26","WETCIT 4X5",5,"L",0,81.818181818181827,"Especialidade"],
+  ["e27","Bt Control 1x10Lt",10,"L",0,82.251082251082252,"Especialidade"],
+  ["e28","EficazControl 6x2 Lt",2,"L",0,519.48051948051955,"Especialidade"],
+  ["e29","FlyControl 6x2Lt",2,"L",0,256.8542568542569,"Especialidade"],
+  ["e30","FrontierControl 5L",5,"L",0,114.28571428571429,"Especialidade"],
+  ["e31","IsaControl 2x5 lt",5,"L",0,187.59018759018761,"Especialidade"],
+  ["e32","MethaControl Evolution 5L",5,"L",0,180.37518037518038,"Especialidade"],
+  ["e33","NemaControl SUPER 6x2Lt",2,"L",0,735.93073593073609,"Especialidade"],
+  ["e34","Simbiose MAIZ 100 ds",100,"Dose",0,4.9062049062049065,"Especialidade"],
+  ["e35","Simbiose Nod 200 ds",200,"Dose",0,1.4430014430014431,"Especialidade"],
+  ["e36","Solubphos 6x2Lt",2,"Dose",0,721.50072150072151,"Especialidade"],
+  ["e37","StimuControl Evolution S 5L",5,"L",0,194.80519480519482,"Especialidade"],
+  ["e38","StimuControl S 5L",5,"L",0,89.466089466089485,"Especialidade"],
+  ["e39","StimuControl TS 6x2Lt",2,"L",0,199.13419913419915,"Especialidade"],
+  ["e40","VirControl Sf 6x1 kg",1,"KG",0,598.84559884559883,"Especialidade"],
+  ["pp01","AURORA 4X5",5,"L",0,369.82924482924483,"Pos Patente"],
+  ["pp02","AVATAR 4X5 LT",5,"L",0,203.43915343915344,"Pos Patente"],
+  ["pp03","BENEVIA",5,"L",0,258.5858585858586,"Pos Patente"],
+  ["pp04","BRAVENGIS",5,"L",0,45.887445887445885,"Pos Patente"],
+  ["pp05","HERO 4X5L",5,"L",0,149.80759980759981,"Pos Patente"],
+  ["pp06","MUSTANG 4X5L",5,"L",0,14.021164021164022,"Pos Patente"],
+  ["pp07","OSUVA",5,"L",0,361.90476190476193,"Pos Patente"],
+  ["pp08","PREMIO 4x5 L",5,"L",0,467.41221741221744,"Pos Patente"],
+  ["pp09","PREMIO STAR",5,"L",0,199.96392496392497,"Pos Patente"],
+  ["pp10","ROVRAL SC",5,"L",0,132.7801827801828,"Pos Patente"],
+  ["pp11","TALISMAN 4X5 LT",5,"L",0,69.516594516594523,"Pos Patente"],
+  ["pp12","TALSTAR 400 1X10 LT",10,"L",0,135.13708513708514,"Pos Patente"],
+  ["sm01","Bonus",1,"Bag",0,15071.845794392522,"Semente"],
+  ["sm02","Cartago",1,"Bag",0,11859.228971962615,"Semente"],
+  ["sm03","Cobre",1,"Bag",0,13509.345794392522,"Semente"],
+  ["sm04","Cruzada",1,"Bag",0,14609.228971962617,"Semente"],
+  ["sm05","Exata",1,"Bag",0,11859.228971962615,"Semente"],
+  ["sm06","Guepardo",1,"Bag",0,12287.091121495327,"Semente"],
+  ["sm07","Mitica",1,"Bag",0,12005.257009345793,"Semente"],
+  ["sm08","Olimpo",1,"Bag",0,13976.635514018692,"Semente"],
+  ["sm09","Raptor",1,"Bag",0,12589.369158878504,"Semente"],
+  ["sm10","Sparta i2x",1,"Bag",0,14527.628504672897,"Semente"],
+  ["sm11","Tormenta",1,"Bag",0,11640.186915887849,"Semente"],
+  ["sm12","Torpedo",1,"Bag",0,11048.612733644861,"Semente"],
+  ["sm13","M 7222 I2X",1,"Bag",0,11640.186915887849,"Semente"],
+  ["sm14","M 7535 I2X",1,"Bag",0,12078.271028037383,"Semente"],
+  ["sm15","M 7601 I2X",1,"Bag",0,12078.271028037383,"Semente"],
+  ["sm16","NEO550 I2X",1,"Bag",0,12569.725793443709,"Semente"],
+  ["sm17","NEO640 I2X",1,"Bag",0,11474.37207943925,"Semente"],
+  ["sm18","NEO680 IPRO",1,"Bag",0,10890.200659703134,"Semente"],
+  ["sm19","NEO690 I2X",1,"Bag",0,11328.344042056073,"Semente"],
+  ["sm20","NEO700 I2X",1,"Bag",0,12481.527453271028,"Semente"],
+  ["sm21","NEO760 CE",1,"Bag",0,11348.130841121494,"Semente"],
+  ["sm22","NEO761 I2X",1,"Bag",0,11590.537383177571,"Semente"],
+  ["sm23","NEO771 I2X",1,"Bag",0,12595.210280373833,"Semente"],
+  ["sm24","NEO790 IPRO",1,"Bag",0,14414.719626168226,"Semente"],
+  ["sm25","NEO791 CE",1,"Bag",0,13361.857476635514,"Semente"],
+  ["sm26","NEO800 I2X",1,"Bag",0,13757.593457943925,"Semente"],
+  ["sm27","NEO801 CE",1,"Bag",0,12650.569509345793,"Semente"],
+  ["sm28","NEO802 I2X",1,"Bag",0,14560.747663551401,"Semente"],
+  ["sm29","NEO820 IPRO",1,"Bag",0,16313.084112149532,"Semente"],
+  ["sm30","GH2473 I2X",1,"Bag",0,13014.481237250342,"Semente"],
+  ["sm31","GH2481I2X",1,"Bag",0,14912.104464158647,"Semente"],
+  ["sm32","GH2483IPRO",1,"Bag",0,13563.012951278521,"Semente"],
+  ["sm33","C2795 CE",1,"Bag",0,12297.313084112149,"Semente"],
+  ["sm34","C2705 CE",1,"Bag",0,11786.214953271028,"Semente"],
+  ["sm35","C2810CE",1,"Bag",0,13096.019735281558,"Semente"],
+  ["sm36","76KA72",1,"Bag",0,11640.186915887849,"Semente"],
+  ["sm37","71KA72",1,"Bag",0,12808.41121495327,"Semente"],
+  ["sm38","79KA72",1,"Bag",0,12662.383177570093,"Semente"],
+  ["sm39","80KA72",1,"Bag",0,12297.313084112149,"Semente"],
+  ["sm40","BRAUNA I2X",1,"Bag",0,14156.020209687367,"Semente"],
+  ["sm41","ITAUBA I2X",1,"Bag",0,16943.154324208921,"Semente"],
+  ["sm42","DM 64IX65 I2X",1,"Bag",0,15426.708528037383,"Semente"],
+  ["sm43","DM 70IX70 I2X",1,"Bag",0,15232.739485981307,"Semente"],
+  ["sm44","DM 72IX74 I2X",1,"Bag",0,14176.985981308411,"Semente"],
+  ["sm45","DM 73I75 IPRO",1,"Bag",0,16459.11214953271,"Semente"],
+  ["sm46","DM 74K75 CE",1,"Bag",0,13933.995327102803,"Semente"],
+  ["sm47","DM 75IX75 I2X",1,"Bag",0,16605.140186915887,"Semente"],
+  ["sm48","DM 78IX80 I2X",1,"Bag",0,16240.391355140186,"Semente"],
+  ["sm49","DM 79K80 CE",1,"Bag",0,15259.740070093458,"Semente"],
+  ["sm50","DM 82I78 IPRO",1,"Bag",0,16897.196261682242,"Semente"],
+  ["sm51","ST 711 I2X",1,"Bag",0,11275.116822429905,"Semente"],
+  ["sm52","ST 745 I2X",1,"Bag",0,11056.074766355141,"Semente"],
+  ["sm53","ST 752 I2X",1,"Bag",0,11932.242990654206,"Semente"],
+  ["sm54","ST 828 I2X",1,"Bag",0,13096.019735281558,"Semente"],
+  ["sy01","ACTARA 250 WG 4X5 KG",5,"KG",33.066315440681784,204.33333333333331,"Syngenta"],
+  ["sy02","ALADE 20 L",20,"L",39.878871204905892,260.58333333333331,"Syngenta"],
+  ["sy03","AMISTAR TOP 20 L",20,"L",30.483645046483396,188.30952380952382,"Syngenta"],
+  ["sy04","AMPLIGO 4X5 L",5,"L",42.868261346222148,289.25,"Syngenta"],
+  ["sy05","ARVATICO 4X5 L",5,"L",79.981438270726599,436.32142857142856,"Syngenta"],
+  ["sy06","CALARIS 20 L",20,"L",11.713528716994286,64.166666666666671,"Syngenta"],
+  ["sy07","CRUISER 350 FS 4X5 L",5,"L",75.91424079954804,429.40476190476193,"Syngenta"],
+  ["sy08","CURYOM 550 EC 4x5 L",5,"L",11.469496868723571,62.845238095238095,"Syngenta"],
+  ["sy09","CYPRESS 400 EC 20 L",20,"L",27.351902993675893,169.04761904761907,"Syngenta"],
+  ["sy10","EDDUS 4X5 L",5,"L",9.130858322795893,50.023809523809533,"Syngenta"],
+  ["sy11","ELATUS 4X5 KG",5,"KG",73.636610215688037,454.9404761904762,"Syngenta"],
+  ["sy12","ELESTALNEO 4X5 KG",5,"KG",121.18214865376554,791.97619047619048,"Syngenta"],
+  ["sy13","ENGEO PLENO S 20 L",20,"L",20.986738951281435,137.22619047619048,"Syngenta"],
+  ["sy14","FLEX 4X5 L",5,"L",10.025641766455179,67.666666666666671,"Syngenta"],
+  ["sy15","FORTENZA 4X5 L",5,"L",255.3589932279466,1472.5714285714287,"Syngenta"],
+  ["sy16","INFLUX 4X5 KG",5,"KG",140.70469651542265,869.30952380952385,"Syngenta"],
+  ["sy17","INSTIVO 4X5 L",5,"L",33.391691238376069,206.25,"Syngenta"],
+  ["sy18","INZAK ZEON 20 L",20,"L",14.052167262921962,94.785714285714292,"Syngenta"],
+  ["sy19","MATCH EC 20 L BRC",20,"L",7.8700271067305358,43.13095238095238,"Syngenta"],
+  ["sy20","MAXIM XL 4X5 L",5,"L",33.025643465970006,191.33333333333334,"Syngenta"],
+  ["sy21","MIRAVIS DUO 20 L",20,"L",35.343946024541786,230.97619047619051,"Syngenta"],
+  ["sy22","MIRAVIS PRO 20 L",20,"L",29.344829754553391,191.79761904761907,"Syngenta"],
+  ["sy23","MITRION 20 L",20,"L",50.067200870208225,327.20238095238096,"Syngenta"],
+  ["sy24","PRIMESTRA GOLD 20 L",20,"L",7.6259952584598212,41.80952380952381,"Syngenta"],
+  ["sy25","PRIORI TOP 20 L",20,"L",30.483645046483396,188.33333333333331,"Syngenta"],
+  ["sy26","POLYTRIN 20 L",20,"L",7.7683471699510704,327.20238095238096,"Syngenta"],
+  ["sy27","PRIORI XTRA 20 L",20,"L",19.949603596130892,134.5952380952381,"Syngenta"],
+  ["sy28","PROCLAIM 50 4X5 KG",5,"KG",66.783382476752138,412.64285714285717,"Syngenta"],
+  ["sy29","REGLONE 20 L",20,"L",6.4261720044621429,35.63095238095238,"Syngenta"],
+  ["sy30","SCORE FLEXI 4x5 L",5,"L",48.175954046110185,297.67857142857144,"Syngenta"],
+  ["sy31","SEEKER 20 L",20,"L",41.72944605429214,272.73809523809524,"Syngenta"],
+  ["sy32","SCORE 4x5 L",5,"L",13.137047831906786,35.63095238095238,"Syngenta"],
+  ["sy33","TILT 4x5 L",5,"L",11.733864704350179,64.238095238095241,"Syngenta"],
+  ["sy34","VERDAVIS 20 L",20,"L",85.512826831529466,558.88095238095241,"Syngenta"],
+  ["sy35","VICTRATO 12x1 L",1,"L",1158.6225436146397,6681.083333333333,"Syngenta"],
+  ["sy36","INVENCIS 20 L",20,"L",82.950492424686942,542.14285714285711,"Syngenta"]
+];
+
+var PRODUTOS = P.map(function(r){
+  return {id:r[0],name:r[1],emb:r[2],unit:r[3],usd:r[4],brl:r[5],classe:r[6]};
+});
+
+var CATS = ["Syngenta","Especialidade","Pos Patente","Semente"];
+var catAtual = "Syngenta";
+var cart = [];
+
+function fmtBRL(n){ return (n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function calcVol(item){ if(!item.qty) return 0; return Math.ceil(item.qty/item.p.emb)*item.p.emb; }
+
+function renderTabs(){
+  var el = document.getElementById('cat-tabs');
+  el.innerHTML = CATS.map(function(cat){
+    var count = cart.filter(function(c){ return c.p.classe===cat; }).length;
+    var badge = count > 0 ? '<span class="badge">'+count+'</span>' : '';
+    return '<button class="cat-tab'+(catAtual===cat?' active':'')+'" data-cat="'+cat+'">'+cat+badge+'</button>';
+  }).join('');
+  el.querySelectorAll('.cat-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      catAtual = btn.getAttribute('data-cat');
+      document.getElementById('busca').value = '';
+      renderTabs();
+      renderList('');
+    });
+  });
+}
+
+function renderList(q){
+  var el = document.getElementById('prod-list');
+  var f = (q||'').toLowerCase();
+  var visible = PRODUTOS
+    .filter(function(p){ return p.classe === catAtual; })
+    .filter(function(p){ return !cart.find(function(c){ return c.p.id===p.id; }); })
+    .filter(function(p){ return !f || p.name.toLowerCase().indexOf(f)>=0; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+  if(!visible.length){
+    el.innerHTML='<div class="prod-empty">'+(!f?'Todos os produtos desta categoria ja foram adicionados':'Nenhum produto encontrado')+'</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<visible.length;i++){
+    var p=visible[i];
+    var preco = p.usd>0 ? 'US$ '+fmtBRL(p.usd)+'/'+p.unit : 'R$ '+fmtBRL(p.brl)+'/'+p.unit;
+    html+='<div class="pi">'
+      +'<div class="pi-info">'
+      +'<div class="pi-name">'+p.name+'</div>'
+      +'<div class="pi-det">Emb: '+p.emb+' '+p.unit+' &middot; '+preco+'</div>'
+      +'</div>'
+      +'<button class="pi-plus" data-pid="'+p.id+'" type="button">+</button>'
+      +'</div>';
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('.pi-plus').forEach(function(btn){
+    var pid=btn.getAttribute('data-pid');
+    function doAdd(e){
+      e.preventDefault(); e.stopPropagation();
+      var prod=PRODUTOS.find(function(p){ return p.id===pid; });
+      if(prod) addItem(prod);
+    }
+    btn.addEventListener('touchend',doAdd,{passive:false});
+    btn.addEventListener('click',doAdd);
+  });
+}
+
+function addItem(p){
+  if(cart.find(function(c){ return c.p.id===p.id; })) return;
+  cart.push({p:p,qty:0});
+  renderTabs();
+  renderList(document.getElementById('busca').value);
+  renderCart();
+  if(navigator.vibrate) navigator.vibrate(30);
+}
+
+function removeItem(id){
+  cart=cart.filter(function(c){ return c.p.id!==id; });
+  renderTabs();
+  renderList(document.getElementById('busca').value);
+  renderCart();
+}
+
+function setQty(id,val){
+  var item=cart.find(function(c){ return c.p.id===id; });
+  if(!item) return;
+  item.qty=parseFloat(val)||0;
+  var v=calcVol(item);
+  var vEl=document.getElementById('vol-'+id);
+  var tEl=document.getElementById('itot-'+id);
+  if(vEl) vEl.textContent = v>0 ? fmtBRL(v)+' '+item.p.unit : '--';
+  if(tEl) tEl.textContent = 'R$ '+fmtBRL(v*item.p.brl);
+  renderSummary();
+}
+
+function renderCart(){
+  var area=document.getElementById('cart-area');
+  if(!cart.length){
+    area.innerHTML='<div class="empty-state"><div class="empty-ico">&#128230;</div><div class="empty-txt">Adicione produtos</div><div class="empty-sub">Selecione a categoria e toque em +</div></div>';
+    renderSummary(); return;
+  }
+  var html='';
+  for(var i=0;i<cart.length;i++){
+    var item=cart[i];
+    var v=calcVol(item);
+    var isSyng=item.p.classe==='Syngenta';
+    var precoLabel = isSyng ? 'US$ '+fmtBRL(item.p.usd)+'/'+item.p.unit : 'R$ '+fmtBRL(item.p.brl)+'/'+item.p.unit;
+    html+='<div class="item-card'+(isSyng?' syng':'')+'">'
+      +'<div class="ic-head">'
+      +'<div class="ic-num'+(isSyng?' syng':'')+'">'+(i+1)+'</div>'
+      +'<div class="ic-name">'+item.p.name+'</div>'
+      +'<span class="ic-classe '+(isSyng?'syng':'other')+'">'+item.p.classe+'</span>'
+      +'<button class="ic-del" data-delid="'+item.p.id+'">&#x2715;</button>'
+      +'</div>'
+      +'<div class="ic-body">'
+      +'<div class="ig"><label>Quantidade</label>'
+      +'<div class="ig-row">'
+      +'<input class="qty-inp" type="number" inputmode="decimal" min="0" step="'+item.p.emb+'" value="'+(item.qty>0?item.qty:'')+'" data-qid="'+item.p.id+'" />'
+      +'<span class="unit-tag">'+item.p.unit+'</span>'
+      +'</div></div>'
+      +'<div class="ig"><label>Vol. emb. inteira</label>'
+      +'<div class="vol-val" id="vol-'+item.p.id+'">'+(v>0?fmtBRL(v)+' '+item.p.unit:'--')+'</div>'
+      +'<div class="vol-note">Emb: '+item.p.emb+' '+item.p.unit+'</div>'
+      +'</div></div>'
+      +'<div class="ic-foot'+(isSyng?' syng':'')+'">'
+      +'<span class="ic-uprice">'+precoLabel+'</span>'
+      +'<span class="ic-total'+(isSyng?' syng':'')+'" id="itot-'+item.p.id+'">R$ '+fmtBRL(v*item.p.brl)+'</span>'
+      +'</div></div>';
+  }
+  area.innerHTML=html;
+  area.querySelectorAll('[data-delid]').forEach(function(btn){
+    var did=btn.getAttribute('data-delid');
+    function doDel(e){ e.preventDefault(); removeItem(did); }
+    btn.addEventListener('touchend',doDel,{passive:false});
+    btn.addEventListener('click',doDel);
+  });
+  area.querySelectorAll('[data-qid]').forEach(function(inp){
+    inp.addEventListener('input',function(){ setQty(inp.getAttribute('data-qid'),inp.value); });
+  });
+  renderSummary();
+}
+
+function renderSummary(){
+  var sojaUSD = (parseFloat(document.getElementById('soja-usd').value)||0) * FUNRURAL;
+  var sojaBRL = (parseFloat(document.getElementById('soja-brl').value)||0) * FUNRURAL;
+  var totBRL=0, totSyngUSD=0, totOutrosBRL=0;
+  for(var i=0;i<cart.length;i++){
+    var v=calcVol(cart[i]);
+    var isSyng=cart[i].p.classe==='Syngenta';
+    totBRL += v * cart[i].p.brl;
+    if(isSyng) totSyngUSD += v * cart[i].p.usd;
+    else totOutrosBRL += v * cart[i].p.brl;
+  }
+  document.getElementById('tot-brl').textContent = 'R$ '+fmtBRL(totBRL);
+
+  var sacasRow=document.getElementById('sacas-row');
+  var sacasSyng = (sojaUSD>0 && totSyngUSD>0) ? totSyngUSD/sojaUSD : 0;
+  var sacasOutros = (sojaBRL>0 && totOutrosBRL>0) ? totOutrosBRL/sojaBRL : 0;
+  var temPrecos = sacasSyng>0 || sacasOutros>0;
+  var temMaisDe1 = cart.length>=2;
+  if(temMaisDe1 && temPrecos){
+    document.getElementById('tot-sacas-syng').textContent = sacasSyng>0 ? fmtBRL(sacasSyng)+' sc' : '-- sc';
+    document.getElementById('tot-sacas-outros').textContent = sacasOutros>0 ? fmtBRL(sacasOutros)+' sc' : '-- sc';
+    document.getElementById('tot-sacas').textContent = fmtBRL(sacasSyng+sacasOutros)+' sc';
+    sacasRow.classList.add('show');
+  } else {
+    sacasRow.classList.remove('show');
+  }
+}
+
+function compartilhar(){
+  if(!cart.length){ toast('Adicione produtos primeiro'); return; }
+  var sojaUSDraw=parseFloat(document.getElementById('soja-usd').value)||0;
+  var sojaUSD=sojaUSDraw*FUNRURAL;
+  var sojaBRLraw=parseFloat(document.getElementById('soja-brl').value)||0;
+  var sojaBRL=sojaBRLraw*FUNRURAL;
+  var cli=document.getElementById('cliente').value||'Cliente';
+  var totBRL=0,sacasSyng=0,sacasOutros=0,linhas=[];
+  for(var i=0;i<cart.length;i++){
+    var v=calcVol(cart[i]);
+    var isSyng=cart[i].p.classe==='Syngenta';
+    totBRL+=v*cart[i].p.brl;
+    if(isSyng && sojaUSD>0) sacasSyng+=(v*cart[i].p.usd)/sojaUSD;
+    else if(!isSyng && sojaBRL>0) sacasOutros+=(v*cart[i].p.brl)/sojaBRL;
+    linhas.push((i+1)+'. '+cart[i].p.name+' ('+cart[i].p.classe+')\n   '+fmtBRL(v)+' '+cart[i].p.unit+' = R$ '+fmtBRL(v*cart[i].p.brl));
+  }
+  var txt='Simulacao Barter Geral\nCliente: '+cli+'\n';
+  if(sojaUSDraw) txt+='Soja Syngenta: US$ '+sojaUSDraw.toFixed(2)+'/sc (liq. Funrural: US$ '+sojaUSD.toFixed(2)+')\n';
+  if(sojaBRLraw) txt+='Soja outros: R$ '+sojaBRLraw.toFixed(2)+'/sc (liq. Funrural: R$ '+sojaBRL.toFixed(2)+')\n';
+  txt+='\n'+linhas.join('\n')+'\n\nTotal: R$ '+fmtBRL(totBRL);
+  var totalSacas=sacasSyng+sacasOutros;
+  if(totalSacas>0) txt+='\nSacas de soja: '+fmtBRL(totalSacas)+' sc';
+  if(navigator.share){ navigator.share({title:'Barter Geral',text:txt}).catch(function(){ copiar(txt); }); }
+  else copiar(txt);
+}
+
+function copiar(txt){
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ toast('Copiado!'); }).catch(function(){ toast('Indisponivel'); });
+  else toast('Indisponivel');
+}
+
+function salvar(){
+  if(!cart.length){ toast('Adicione produtos primeiro'); return; }
+  var sojaUSDraw=parseFloat(document.getElementById('soja-usd').value)||0;
+  var sojaUSD=sojaUSDraw*FUNRURAL;
+  var sojaBRL=(parseFloat(document.getElementById('soja-brl').value)||0)*FUNRURAL;
+  var cli=document.getElementById('cliente').value||'Cliente';
+  var totBRL=0,sacasSyng=0,sacasOutros=0,items=[];
+  for(var i=0;i<cart.length;i++){
+    var v=calcVol(cart[i]);
+    var isSyng=cart[i].p.classe==='Syngenta';
+    totBRL+=v*cart[i].p.brl;
+    if(isSyng && sojaUSD>0) sacasSyng+=(v*cart[i].p.usd)/sojaUSD;
+    else if(!isSyng && sojaBRL>0) sacasOutros+=(v*cart[i].p.brl)/sojaBRL;
+    items.push({nome:cart[i].p.name,classe:cart[i].p.classe,qty:cart[i].qty,vol:v,unit:cart[i].p.unit,total:v*cart[i].p.brl});
+  }
+  try{
+    var h=JSON.parse(localStorage.getItem('barter_geral_hist')||'[]');
+    h.unshift({cliente:cli,sojaUSD:sojaUSD,sojaBRL:sojaBRL,items:items,totBRL:totBRL,totSacas:sacasSyng+sacasOutros,dt:new Date().toISOString()});
+    localStorage.setItem('barter_geral_hist',JSON.stringify(h.slice(0,30)));
+    toast('Simulacao salva!');
+    if(navigator.vibrate) navigator.vibrate([30,20,30]);
+  }catch(e){ toast('Erro ao salvar'); }
+}
+
+function abrirHist(){
+  document.getElementById('hist-overlay').classList.remove('hidden');
+  document.getElementById('hist-drawer').classList.remove('hidden');
+  var h=[];
+  try{ h=JSON.parse(localStorage.getItem('barter_geral_hist')||'[]'); }catch(e){}
+  var el=document.getElementById('hist-list');
+  if(!h.length){ el.innerHTML='<div class="hist-empty">Nenhuma simulacao salva</div>'; return; }
+  var html='';
+  for(var i=0;i<h.length;i++){
+    var s=h[i]; var d=new Date(s.dt);
+    var ds=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    html+='<div class="hist-item"><div class="hist-cli">'+(s.cliente||'Cliente')+'</div>'
+      +'<div class="hist-row"><span class="hist-date">'+ds+'</span><span class="hist-total">R$ '+fmtBRL(s.totBRL||0)+'</span></div>'
+      +'<div class="hist-det">'+(s.items||[]).length+' produto(s) &middot; '+fmtBRL(s.totSacas||0)+' sc</div></div>';
+  }
+  el.innerHTML=html;
+}
+
+function fecharHist(){
+  document.getElementById('hist-overlay').classList.add('hidden');
+  document.getElementById('hist-drawer').classList.add('hidden');
+}
+
+var toastT;
+function toast(msg){
+  var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(function(){ el.classList.remove('show'); },2500);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('busca').addEventListener('input',function(e){ renderList(e.target.value); });
+  document.getElementById('soja-usd').addEventListener('input',renderSummary);
+  document.getElementById('soja-brl').addEventListener('input',renderSummary);
+  document.getElementById('btn-hist').addEventListener('click',abrirHist);
+  document.getElementById('btn-close-hist').addEventListener('click',fecharHist);
+  document.getElementById('hist-overlay').addEventListener('click',fecharHist);
+  document.getElementById('btn-share').addEventListener('click',compartilhar);
+  document.getElementById('btn-save').addEventListener('click',salvar);
+  renderTabs();
+  renderList('');
+  renderCart();
+});
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
+  });
+}
+</script>
+</body>
+</html>
